@@ -1,0 +1,39 @@
+SPI Call back:
+This code is a Python script that uses the spidev, numpy, pandas and RPi.GPIO libraries to read data from an ADXL355 accelerometer connected to a Raspberry Pi via SPI. The code does the following:
+
+- It defines some global variables for the vibration data and the register addresses of the ADXL355.
+- It defines a function `drdy_callback` that is triggered when the data ready (DRDY) pin of the ADXL355 goes high. This function reads three bytes of data from the x-axis register, combines them into a 20-bit value, takes the two's complement and converts it to a float, and appends it to the `vibX` list.
+- It opens the SPI bus 0 with chip select 0 and sets the mode and frequency for communication with the ADXL355.
+- It writes to the range register of the ADXL355 to set the interrupts to active high and the range to +- 8g.
+- It sets up the GPIO pin 16 as an input with a pull-up resistor and adds an event detection for rising edge with the `drdy_callback` function as the callback.
+- It writes to the power control register of the ADXL355 to enable measurement mode and starts a global timer for one minute.
+- It loops until the timer expires, then writes to the power control register again to enable stand by mode, removes the event detection and closes the SPI bus.
+- It converts the `vibX` list to a numpy array and generates a plot (not shown in the code).
+- It saves the vibration data to a CSV file (not shown in the code).
+
+
+SPI test:
+This code is a modified version of the previous code that uses a different method to read data from the ADXL355 accelerometer. The main differences are:
+
+- It does not use the `drdy_callback` function or the `GPIO.add_event_detect` method to handle the data ready interrupt. Instead, it uses a `while` loop and the `GPIO.wait_for_edge` method to wait for the rising edge of the data ready pin and then read the data.
+- It reads only the x-axis data and appends it to the `vibX` list, instead of reading all three axes and appending them to their respective lists.
+- It does not use the `spi.writebytes` method to send the starting address of the x-axis register, but uses the `spi.xfer` method instead, which returns the values read from the register.
+- It does not use the `!` operator to take the two's complement of the 20-bit value, but uses a bitwise NOT operation instead. This is equivalent, but less readable.
+
+
+Example_Mcc:
+This code is a Python script that uses the daqhats library to read and display the analog input values from an MCC 118 DAQ HAT board connected to a Raspberry Pi. The code does the following:
+
+- It imports the sys and daqhats modules, which provide system functions and DAQ HAT functions respectively.
+- It calls the `hat_list` function with the `filter_by_id` parameter set to `HatIDs.ANY`, which returns a list of all MCC DAQ HAT boards attached to the Raspberry Pi.
+- It checks if the list is empty, and if so, prints "No boards found" and exits the program.
+- It iterates over the entries in the list, and if the entry has an id of `HatIDs.MCC_118`, which indicates an MCC 118 board, it prints "Board X: MCC 118", where X is the address of the board.
+- It creates an `mcc118` object with the address of the board, and calls its `info` method to get information about the board, such as the number of analog input channels.
+- It loops over the range of analog input channels, and calls the `a_in_read` method with the channel number as an argument, which returns the voltage value of that channel.
+- It prints "Ch Y: Z", where Y is the channel number and Z is the voltage value formatted to three decimal places.
+
+Links:
+(1) GitHub - mccdaq/daqhats: MCC DAQ HAT Library for Raspberry Pi. https://github.com/mccdaq/daqhats.
+(2) DAQ HAT Library - Digilent Reference - MCCDAQ.com. https://digilent.com/reference/software/daq-hats/start.
+(3) Raspberry Pi | Data Acquisition (DAQ) Products | Data Logger .... https://digilent.com/shop/mcc-daq/data-loggers/mcc-daq-hats-for-raspberry-pi/.
+(4) undefined. https://www.raspberrypi.org/help/.
